@@ -184,3 +184,99 @@ Ce TP montre :
 * L’exposition d’une API REST via Docker
 
 Le projet est désormais **portable, reproductible et prêt pour le déploiement** 🚀
+
+
+
+# TP 3 : Kubernetes 
+
+Réalisation du TP 3 stipulant sur les initiations de Kubernetes et sur sa bonne utilisation. 
+
+1) Céation du déploiement de Kubernetes à partir de mon image Docker 
+
+J'ai décidé de prendre l'image du Customer Service car meilleure que celui de RentalService et surtout plus récente.
+
+Premier probleme : Quand je lance la commande "minikube start", j'ai immédiatement une erreure lié à l'utilisation de VirtualBox.
+
+![VirtualBox](images/VirtualBox.png)
+
+Pour régler ce problme, j'ai dû lier le lancement de minikube à Docker avec la commande : 
+
+```bash
+minikube start --driver=docker
+```
+
+Une fois cela fait, on obtient : 
+
+![Kubernetes](images/Kubernetes.png)
+
+Parfait !!! Maintenant Kubernetes marche et est bine configuré. 
+
+On va pouvoir passer à la suite du TP. Pour créer le déploiement j'utilise la commande : 
+
+```bash
+kubectl create deployment mon-application --image=yannthon/service2-php
+```
+
+On obtient le résultat escompté : 
+
+![Déploiement](images/Déploiement_images_kubernetes.png)
+
+On vérifie bien que le déploiement a eu lieu avec les commandes : 
+
+```kubectl get deployments```
+et
+```kubectl get pods```
+
+Le résultat en image : 
+
+![Vérification_déploiement](images/vérification_deploiements.png)
+
+2) Exposez les routes HTTP et HTTPS via NodePort.
+
+Maintenant on va exposer les routes HTTP et HTTPS. Pour ce faire, on va créer un service de type ClusterIP. Avec la commande : 
+
+```bash 
+kubectl expose deployment mon-application --port=80 --target-port=8080
+```
+On vérifie que cela à bien été fait avec la commande : ```kubectl get services```
+
+Preuve en image :
+
+![exposition](images/exposition_verification.png)
+
+Étant donné que j'ai lancé l'exposition des routes avec le port 80 et non le "NodePort", la commande ```minikube service myservice --url``` me renvoie ceci comme message : "Because you are using a Docker driver on darwin, the terminal needs to be open to run it." Donc je n'arrive pas à avoir le message : "hello"
+
+On va démarrer une deuxieme instance : 
+
+```bash 
+kubectl scale --replicas=2 deployment/mon-application
+```
+Voici le résultat : 
+
+![deuxieme_instance](images/deuxieme_instance.png)
+
+3) Création d'un service de type LoadBalancer
+
+Pour créer un nouveau service de type LoadBalancer, on va d'abord devoir supprimer l'ancien avec la commade ```kubectl delete service <nomduservice>```
+
+![LoadBalancer](images/LoadBalancer.png)
+
+Maintenant, on va mettre à jour, l'image de l'application. Pour ce faire on va utiliser la commande : ```kubectl set image deployments/my-deployment my-deployment=dockerHudId/my-image:v2```
+
+Petit probleme : Je n'arrive pas à mettre à jour l'image car le systeme n'arrive pas à trouver le bon container. Je dois donc trouver d'abord le bon container avec la commande : 
+
+```bash 
+kubectl describe deployment mon-application
+```
+![containers](images/Conteneurs.png)
+
+Une fois que c'est bon, on peut poursuivre. 
+
+![MAJ](images/MAJ.png)
+
+5) Créez un déploiement et un service à l'aide d'un fichier YAML
+
+Pour cela, j'ai du créer deux fichiers : myservice-deployment.yml et myservice-service.yml. 
+
+![fichiersyaml](images/fichiers_yaml.png)
+

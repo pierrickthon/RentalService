@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: myservice
+spec:
+  selector:
+    app: myservice
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80 # Remplace par le port utilisé par ton application dans le conteneur
+  type: NodePort
